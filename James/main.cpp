@@ -6,6 +6,12 @@ MicroBit uBit;
 
 int main() {
 
+  int xyzScale = 1024;
+  int xCentre =  29744;
+  int yCentre = 4294;
+  int zCentre = 57464;
+  int radius = 55903
+
   int leftLED = 0;
   int rightLED = 0;
   
