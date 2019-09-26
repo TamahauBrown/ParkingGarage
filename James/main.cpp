@@ -10,7 +10,18 @@ int main() {
   int xCentre =  29744;
   int yCentre = 4294;
   int zCentre = 57464;
-  int radius = 55903
+  int radius = 55903;
+
+  CompassCalibration cal = CompassCalibration();
+  cal.scale.x = xyzScale;
+  cal.scale.y = xyzScale;
+  cal.scale.z = xyzScale;
+  cal.centre.x = xCentre;
+  cal.centre.y = yCentre;
+  cal.centre.z = zCentre;
+  cal.radius = radius;
+  
+  uBit.compass.setCalibration(cal);
 
   int leftLED = 0;
   int rightLED = 0;
