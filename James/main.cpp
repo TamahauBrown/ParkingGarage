@@ -18,7 +18,7 @@ int main() {
   int leftSensor;
   int rightSensor;
   
-  uBit.display.print('A');   // Display letter to microbit
+  //uBit.display.print('A');   // Display letter to microbit
   
   while (true) {
 
@@ -27,13 +27,23 @@ int main() {
     rightSensor = uBit.io.P14.getDigitalValue();
 
     // 0 = black, 1 = white
-
-    leftLED = leftSensor;
-    rightLED = rightSensor;
-
+    if(leftSensor == 1){
+      leftLED = 1;
+    }
+    else{
+      leftLED = 0;
+    }
     
+    if(rightSensor == 0){
+      rightLED = 1;
+    }
+    else{
+      rightLED = 0;
+    }
+
+    // Display light to match which motors should be going forward
     uBit.io.P8.setDigitalValue(leftLED);
-    //uBit.io.P12.setDigitalValue(rightLED);
+    uBit.io.P12.setDigitalValue(rightLED);
     
     // Operate the motor
     if (leftSensor == 1 && rightSensor == 0){ // if white, black so go forward
