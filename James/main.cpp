@@ -124,12 +124,12 @@ int main() {
       flashLights(spinCounter); // Flash lights
     }
     else if (leftSensor == 0 && rightSensor == 0){ // else if black, black
-      d = Right; // Turn right
-      lights(0, 1); // Right light on
-    }
-    else if (leftSensor == 1 && rightSensor == 1){ // else if white, white
       d = Left; // Turn left
       lights(1, 0); // Left light on
+    }
+    else if (leftSensor == 1 && rightSensor == 1){ // else if white, white
+      d = Right; // Turn right
+      lights(0, 1); // Right light on
     }
     else { // else black, white
       d = Stop;  // Stop wheels
