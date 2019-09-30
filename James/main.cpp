@@ -53,7 +53,7 @@ void lights(int leftLED, int rightLED){
 void flashLights(int counter){
   int rightLED;
   int leftLED;
-  int flashDuration = 10;
+  int flashDuration = 1000;
 
   uBit.display.print('?');
   
@@ -68,6 +68,11 @@ void flashLights(int counter){
   }
   
   lights(leftLED, rightLED);
+}
+
+void manualCalibrate(MicroBitEvent)
+{
+  uBit.compass.calibrate();
 }
 
 int main() {
@@ -93,6 +98,9 @@ int main() {
   
   uBit.compass.setCalibration(cal);
 
+  // Setup some button handlers to allow extra control with buttons.
+  uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK, manualCalibrate);
+
   //---------------------------------------------------
 
   int leftLED = 0;
@@ -105,7 +113,7 @@ int main() {
   int leftSensor;
   int rightSensor;
   
-  //uBit.display.print('A');   // Display letter to microbit
+  uBit.display.print('G');   // Display letter to microbit
   
   while (true) {
 
@@ -117,7 +125,7 @@ int main() {
     if (leftSensor == 1 && rightSensor == 0){ // if white, black
       d = Forward; // Go forward
       lights(1, 1); // Both lights on
-      spinCounter = 0;
+      spinCounter = 0; // We have stopped turning/spinning
     }
     else if(spinCounter > 5000){ // If lost and just spinning
       d = Stop; // Stop wheels
@@ -126,10 +134,12 @@ int main() {
     else if (leftSensor == 0 && rightSensor == 0){ // else if black, black
       d = Left; // Turn left
       lights(1, 0); // Left light on
+      spinCounter++; // Add to spin counter as we are turning
     }
     else if (leftSensor == 1 && rightSensor == 1){ // else if white, white
       d = Right; // Turn right
       lights(0, 1); // Right light on
+      spinCounter++; // Add to spin counter as we are turning
     }
     else { // else black, white
       d = Stop;  // Stop wheels
@@ -144,20 +154,23 @@ int main() {
     // Send compass calibration value to PC over serial port
 
   
-    /*
-    uBit.init();uint8_t buffer[10];  // Bigger than needed
-
-    int x = uBit.compass.getX();
-    *((int *)buffer) = x;
-    uBit.serial.send(buffer,2);
     
-    int z = uBit.compass.getZ();
-    *((int *)buffer) = z;
+    uBit.init();uint8_t buffer[10];  // Bigger than needed
+    /*
+    int h1 = uBit.compass.heading();
+    *((int *)buffer) = h1;
     uBit.serial.send(buffer,2);
     */
+    int x = uBit.compass.getX();
+    *((int *)buffer) = x;
     
-    release_fiber();
+    int z = uBit.compass.getZ();
+    *((int *)(buffer+2)) = z;
+    uBit.serial.send(buffer,4);
+    
   }
+    
+  release_fiber();
 }
 
 
