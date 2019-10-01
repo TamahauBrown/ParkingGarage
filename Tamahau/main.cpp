@@ -53,7 +53,7 @@ void lights(int leftLED, int rightLED){
 void flashLights(int counter){
   int rightLED;
   int leftLED;
-  int flashDuration = 10;
+  int flashDuration = 1000;
 
   uBit.display.print('?');
   
@@ -68,6 +68,11 @@ void flashLights(int counter){
   }
   
   lights(leftLED, rightLED);
+}
+
+void manualCalibrate(MicroBitEvent)
+{
+  uBit.compass.calibrate();
 }
 
 int main() {
@@ -93,6 +98,9 @@ int main() {
   
   uBit.compass.setCalibration(cal);
 
+  // Setup some button handlers to allow extra control with buttons.
+  uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK, manualCalibrate);
+
   //---------------------------------------------------
 
   int leftLED = 0;
@@ -105,10 +113,12 @@ int main() {
   int leftSensor;
   int rightSensor;
   
-  //uBit.display.print('A');   // Display letter to microbit
-  
-  while (true) {
+  uBit.display.print('G');   // Display letter to microbit
 
+  uBit.init();uint8_t buffer[10];  // Bigger than needed
+
+  
+/*
     leftSensor = uBit.io.P13.getDigitalValue();
 
     rightSensor = uBit.io.P14.getDigitalValue();
@@ -117,7 +127,7 @@ int main() {
     if (leftSensor == 1 && rightSensor == 0){ // if white, black
       d = Forward; // Go forward
       lights(1, 1); // Both lights on
-      spinCounter = 0;
+      spinCounter = 0; // We have stopped turning/spinning
     }
     else if(spinCounter > 5000){ // If lost and just spinning
       d = Stop; // Stop wheels
@@ -140,24 +150,26 @@ int main() {
     
     spinCounter++;
 
-  
+*/
     // Send compass calibration value to PC over serial port
-
-  
-    /*
-    uBit.init();uint8_t buffer[10];  // Bigger than needed
-
+    while (true) {
+    //int h1 = uBit.compass.heading();
+    //*((int *)buffer) = h1;
+    //uBit.serial.send(buffer,2);
+    
     int x = uBit.compass.getX();
     *((int *)buffer) = x;
-    uBit.serial.send(buffer,2);
     
     int z = uBit.compass.getZ();
-    *((int *)buffer) = z;
-    uBit.serial.send(buffer,2);
-    */
-    
-    release_fiber();
+    *((int *)(buffer+2)) = z;
+    *((int *)(buffer+4)) = 0x8080;
+    uBit.serial.send(buffer,6);
+
+   
+   uBit.sleep(2000);
   }
+    
+  release_fiber();
 }
 
 
