@@ -15,6 +15,9 @@ bytes = 6
 posFail = 0
 pos = 0
 lastRead = 0
+xPos = ["0x0", "0x0"];
+yPos = ["0x0", "0x0"];
+zPos = ["0x0", "0x0"];
 
 while (True):
   c = ser.read(bytes)
@@ -43,14 +46,21 @@ while (True):
   #If it does not then it gets the split bytes and concatenates them together
   else:
     diff = bytes - pos
-    d = c[pos : pos + diff]
-    c = c[0 : (pos - 2)]
-    e = b"".join([d, c])
+    #X position
+    xPos = c[pos : pos + diff]
+    #Z position
+    zPos = c[0 : (pos - 2)]
+    #both values together
+    e = b"".join([xPos, zPos])
     c = e
   #Unpacks the bytes and gets the values, it also only works with bits of 4? So I assume 8 would work
   results = struct.unpack('>HH', c)
+
+  angle = math.atan2(results[0], results[1])*180/math.pi
   #Prints out the values
   print(results)
+  print("Angle is: ", angle)
+  
 
 '''
 scale:
