@@ -134,12 +134,10 @@ int main() {
     else if (leftSensor == 0 && rightSensor == 0){ // else if black, black
       d = Left; // Turn left
       lights(1, 0); // Left light on
-      spinCounter++; // Add to spin counter as we are turning
     }
     else if (leftSensor == 1 && rightSensor == 1){ // else if white, white
       d = Right; // Turn right
       lights(0, 1); // Right light on
-      spinCounter++; // Add to spin counter as we are turning
     }
     else { // else black, white
       d = Stop;  // Stop wheels
@@ -147,8 +145,10 @@ int main() {
     }
     
     motors(d);  // Implement set direction
+    
+    spinCounter++
 
-  
+
     // Send compass calibration value to PC over serial port
 
   
