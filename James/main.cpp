@@ -146,7 +146,7 @@ int main() {
     
     motors(d);  // Implement set direction
     
-    spinCounter++
+    spinCounter++;
 
 
     // Send compass calibration value to PC over serial port
