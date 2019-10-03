@@ -17,18 +17,12 @@ void lights(int leftLED, int rightLED){
 void flashLights(int counter, int left, int right){
   int rightLED;
   int leftLED;
-  int flashDuration = 500;
-
-  uBit.display.print('?');
+  int flashDuration = 200;
   
   // Make the lights flash
   if(counter % flashDuration < flashDuration/2){
-    if(left == 1){
-      leftLED = 1;
-    }
-    if(right == 1){
-      rightLED = 1;
-    }
+      leftLED = left;
+      rightLED = right;
   }
   else {
     rightLED = 0;
@@ -62,26 +56,29 @@ int motors(Direction d, int spinCounter){
   }
   else if(spinCounter > 5000){ // If lost and just spinning
     d = Stop; // Stop wheels
+    uBit.display.print('?');
     flashLights(spinCounter, 1, 1); // Flash lights
     spinCounter++;
   }
   else if(d == Left){
-    lWCom[2] = 0;
+    lWCom[2] = go;
     rWCom[2] = go;
-    lights(1, 0); // Left light on
+    lWCom[1] = 1; // Reverse left wheel
+    flashLights(spinCounter, 1, 0); // Left light on
     spinCounter++;
   }
   else if(d == Right){
     lWCom[2] = go;
-    rWCom[2] = 0;
-    lights(0, 1); // Right light on
+    rWCom[2] = go;
+    rWCom[1] = 1; // Reverse right wheel
+    flashLights(spinCounter, 0, 1); // right light on
     spinCounter++;
   }
   else if(d == SharpLeft){
     lWCom[2] = go;
-    // Reverse right wheel
-    rWCom[1] = 1;
     rWCom[2] = go;
+    // Reverse right wheel
+    lWCom[1] = 1;
     flashLights(spinCounter, 1, 0); // Left light on
   }
   else { // Stop
