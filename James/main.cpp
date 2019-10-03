@@ -47,6 +47,8 @@ int motors(Direction d, int spinCounter){
   lWCom[1] = 0;
   rWCom[1] = 0;
   // command[2] => Speed of wheel (0 or go)
+  lWCom[2] = 0;
+  rWCom[2] = 0;
 
   if(d == Forward){
     lWCom[2] = go;
@@ -61,8 +63,8 @@ int motors(Direction d, int spinCounter){
     spinCounter++;
   }
   else if(d == Left){
-    lWCom[2] = go;
-    lWCom[1] = 1; // Reverse left wheel
+    //lWCom[2] = go;
+    //lWCom[1] = 1; // Reverse left wheel
     
     rWCom[2] = go;
     
@@ -72,8 +74,8 @@ int motors(Direction d, int spinCounter){
   else if(d == Right){
     lWCom[2] = go;
     
-    rWCom[2] = go;
-    rWCom[1] = 1; // Reverse right wheel
+    //rWCom[2] = go;
+    //rWCom[1] = 1; // Reverse right wheel
     
     flashLights(spinCounter, 0, 1); // right light on
     spinCounter++;
@@ -230,7 +232,7 @@ int main() {
 	  }
 	  else if (path[intersection] == Left){ // Go right at intersection
 	    //
-	    if(leftSensor == 1 && rightSensor == 1){// If, white, whitw
+	    if(leftSensor == 1 && rightSensor == 1){// If, white, white
 	      // We are out of the intersection
 	      break;
 	    }
@@ -251,15 +253,17 @@ int main() {
 	  }
 	  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	  else{ // Else park
-	    d = Stop;  // Stop wheels
-	    break;
+	    spinCounter = motors(Stop, spinCounter);
+	    uBit.display.print('A'); //TODO display parking lot letter
+	    release_fiber();
 	  }
 	}
 	d = Stop; // After intersection clear last direction and stop
 	intersection++; // Out of current intersection 
       }
-      else{ // Else park
+      else{ // Else emergency stop
 	d = Stop;  // Stop wheels
+	uBit.display.print('!');
       }
     }
 
