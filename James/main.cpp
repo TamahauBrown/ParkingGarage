@@ -3,7 +3,7 @@
 MicroBit uBit;
 
 // \Enum for the directions the car can move
-enum Direction {Forward, Left, Right, Stop, SharpLeft, LongRight};
+enum Direction {Forward, Left, Right, Stop};
 
 
 // Method to light the red LED lights on the front
@@ -35,7 +35,7 @@ void flashLights(int counter, int left, int right){
 // Method to control the wheels
 int motors(Direction d, int spinCounter){
   
-  int go = 50;  //forward speed, should be between 30 and 70
+  int go = 40;  //forward speed, should be between 30 and 70
   
   char lWCom[10];  // left wheel command to send
   char rWCom[10];  // right wheel command to send
@@ -62,24 +62,21 @@ int motors(Direction d, int spinCounter){
   }
   else if(d == Left){
     lWCom[2] = go;
-    rWCom[2] = go;
     lWCom[1] = 1; // Reverse left wheel
+    
+    rWCom[2] = go;
+    
     flashLights(spinCounter, 1, 0); // Left light on
     spinCounter++;
   }
   else if(d == Right){
     lWCom[2] = go;
+    
     rWCom[2] = go;
     rWCom[1] = 1; // Reverse right wheel
+    
     flashLights(spinCounter, 0, 1); // right light on
     spinCounter++;
-  }
-  else if(d == SharpLeft){
-    lWCom[2] = go;
-    rWCom[2] = go;
-    // Reverse right wheel
-    lWCom[1] = 1;
-    flashLights(spinCounter, 1, 0); // Left light on
   }
   else { // Stop
     lWCom[2] = 0;
@@ -128,15 +125,15 @@ int main() {
   //---------------------------------------------------
 
   // Predetermined routes to car parks
-  int pathSize = 5;
-  Direction A[pathSize] = {Left, Forward, Stop, Stop, Stop};
-  Direction B[pathSize] = {Left, Right, Left, Stop, Stop};
-  Direction C[pathSize] = {Left, Right, Forward, Left, Stop};
-  Direction D[pathSize] = {Right, Left, Right, Stop, Stop};
-  Direction E[pathSize] = {Right, Forward, Stop, Stop, Stop};
-  Direction F[pathSize] = {Left, Right, Right, Stop, Stop};
-  Direction G[pathSize] = {Right, Left, Forward, Left, Stop};
-  Direction H[pathSize] = {Right, Left, Left, Stop, Stop};
+  int pathSize = 4;
+  Direction A[pathSize] = {Left, Forward, Stop, Stop};
+  Direction B[pathSize] = {Left, Right, Left, Stop};
+  Direction C[pathSize] = {Left, Right, Forward, Left};
+  Direction D[pathSize] = {Right, Left, Right, Stop};
+  Direction E[pathSize] = {Right, Forward, Stop, Stop};
+  Direction F[pathSize] = {Left, Right, Right, Stop};
+  Direction G[pathSize] = {Forward, Stop, Stop, Stop};
+  Direction H[pathSize] = {Right, Left, Left, Stop};
   Direction path[pathSize];
   for(int i = 0; i < pathSize; i++){
     path[i] = A[i];
@@ -153,9 +150,9 @@ int main() {
   int leftSensor;
   int rightSensor;
   
-  uBit.display.print('G');   // Display letter to microbit
-  
   while (true) {
+  
+    uBit.display.print('G');   // Display letter saying okay to microbit
 
     leftSensor = uBit.io.P13.getDigitalValue();
 
@@ -179,14 +176,14 @@ int main() {
 	// Handling intersection
 	//---------------------------------------------------------------------
 	motors(Stop, 0);
-	uBit.display.print(intersection);   // Display intersection number to microbit
+	uBit.display.scroll(intersection);   // Display intersection number to microbit
 	if(path[intersection] == Forward){
 	  lights(1,1);
 	  uBit.display.print('^');   // Display going forward to microbit
 	  uBit.sleep(1000);
 	}
 	else if(path[intersection] == Left){
-	  uBit.display.print('<');   // Display going left to microbit
+	  uBit.display.print('>');   // Display going left to microbit
 	  for(int i = 0; i < 5; i++){
 	    lights(1,0);
 	    uBit.sleep(100);
@@ -195,7 +192,7 @@ int main() {
 	  }
 	}
 	else if(path[intersection] == Right){
-	  uBit.display.print('>');   // Display going right to microbit
+	  uBit.display.print('<');   // Display going right to microbit
 	  for(int i = 0; i < 5; i++){
 	    lights(0,1);
 	    uBit.sleep(100);
@@ -233,20 +230,18 @@ int main() {
 	  }
 	  else if (path[intersection] == Left){ // Go right at intersection
 	    //
-	    if(leftSensor == 1 && rightSensor == 0){// If, white, black
+	    if(leftSensor == 1 && rightSensor == 1){// If, white, whitw
 	      // We are out of the intersection
-	      intersection++;
 	      break;
 	    }
 	    // otherwise keep turning
-	    spinCounter = motors(SharpLeft, spinCounter);
+	    spinCounter = motors(Left, spinCounter);
 	    
 	    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	  }
 	  else if (path[intersection] == Right){ // Go right at intersection
 	    if(leftSensor == 1 && rightSensor == 0){// If, white, black
 	      // We are out of the intersection
-	      intersection++;
 	      break;
 	    }
 	    
@@ -254,12 +249,14 @@ int main() {
 	    break;
 	    
 	  }
-	  else { // else stop
+	  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	  else{ // Else park
 	    d = Stop;  // Stop wheels
-	    intersection++;
 	    break;
 	  }
 	}
+	d = Stop; // After intersection clear last direction and stop
+	intersection++; // Out of current intersection 
       }
       else{ // Else park
 	d = Stop;  // Stop wheels
