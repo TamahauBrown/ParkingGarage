@@ -103,6 +103,10 @@ int main() {
 
   //---------------------------------------------------
 
+  // Predetermined routes to car parks
+  Direction[3] A = {Left, Forward, Forward};
+  int intersection = 0;
+
   int leftLED = 0;
   int rightLED = 0;
 
@@ -140,8 +144,16 @@ int main() {
       lights(0, 1); // Right light on
     }
     else { // else black, white
-      d = Stop;  // Stop wheels
-      lights(0, 0); // Both lights off
+
+      // Met intersection
+      if (intersection < A.length){
+	d = A[intersection];
+	intersection++;
+      }
+      else{ // Else park
+	d = Stop;  // Stop wheels
+	lights(0, 0); // Both lights off
+      }
     }
     
     motors(d);  // Implement set direction
