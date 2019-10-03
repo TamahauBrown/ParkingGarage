@@ -80,11 +80,11 @@ int main() {
   // Set the compass calibration
   //---------------------------------------------------
   
-  int xyzScale = 1024;
-  int xCentre =  29744;
-  int yCentre = 4294;
-  int zCentre = 57464;
-  int radius = 55903;
+  int xyzScale = 4;    //1024;
+  int xCentre = 18435; //29744;
+  int yCentre = 35367; //4294;
+  int zCentre = 64023; //57464;
+  int radius = 4537;   //55903;
 
   CompassCalibration cal = CompassCalibration();
   
