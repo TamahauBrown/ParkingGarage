@@ -13,7 +13,7 @@ bool needPark = true;
 
 
 // Enum for the directions the car can move
-enum Direction {Forward, Left, Right, Stop, sharpLeft};
+enum Direction {Forward, Left, Right, Stop, sharpLeft, Reverse};
 
 
 // Method to light the red LED lights on the front
@@ -64,7 +64,7 @@ void checkSensor(){
 // Method to control the wheels
 int motors(Direction d, int spinCounter){
   
-  int go = 50;  //forward speed, should be between 30 and 70
+  int go = 40;  //forward speed, should be between 30 and 70
   int slow = 0;
   
   char lWCom[10];  // left wheel command to send
@@ -120,6 +120,15 @@ int motors(Direction d, int spinCounter){
     
     flashLights(spinCounter, 1, 0); // Left light on
     spinCounter++;
+  }
+  else if(d == Reverse){
+    lWCom[2] = go;
+    lWCom[1] = 1; // Reverse left wheel
+    
+    rWCom[2] = go;
+    rWCom[1] = 1; // Reverse right wheel
+    
+    flashLights(spinCounter, 1, 1); // flash lights
   }
   else { // Stop
     lWCom[2] = 0;
@@ -272,6 +281,7 @@ int main() {
   Direction A[pathSize] = {Left, Forward, Stop, Stop};
   Direction B[pathSize] = {Left, Right, Left, Stop};
   Direction C[pathSize] = {Left, Right, Forward, Left};
+  //Direction C[pathSize] = {Right, Left, Forward, Right};
   Direction D[pathSize] = {Right, Left, Right, Stop};
   Direction E[pathSize] = {Right, Forward, Stop, Stop};
   Direction F[pathSize] = {Left, Right, Right, Stop};
@@ -339,8 +349,6 @@ int main() {
 
   int leftSensor;
   int rightSensor;
-
-  int distance;
   
   while (true) {
   
@@ -395,43 +403,55 @@ int main() {
 
 	// Operate the motor during the intersection
 	if (path[intersection] == Forward){ // Go forward at intersection
+
+	  // First state to line up car
 	  /*while(leftSensor == 0 && rightSensor == 1){ // while black, white
 	    leftSensor = uBit.io.P13.getDigitalValue();
 	    rightSensor = uBit.io.P14.getDigitalValue();
 
 	    spinCounter = motors(Left, spinCounter);
 	    }*/
+
+	  // Go forward a little
+	  /*spinCounter = motors(Forward, spinCounter);
+	    uBit.sleep(100);*/
+
+	  int timeCounter = 0;
 	  
-	  spinCounter = motors(Forward, spinCounter);
-	  uBit.sleep(100);
-	  
-	
+	  // Follow a straight line
 	  while (true){ // while in intersection
 	    
 	    leftSensor = uBit.io.P13.getDigitalValue();
 
 	    rightSensor = uBit.io.P14.getDigitalValue();
 
-	    if (leftSensor == 1 && rightSensor == 0){ // if white, black
-	      d = Stop; // Out of intersection
-	      break;
+	    if(timeCounter > 3000){
+	      // This makes use of the spinCounter to display the microBit is lost
+	      motors(Stop, 10000);
 	    }
-	    else if (leftSensor == 0 && rightSensor == 1){ // if black, white
-	      d = Forward; // Go forward
-	    }
-	    else if (leftSensor == 0 && rightSensor == 0){ // else if black, black
-	      d = Right;
-	    }
-	    else if (leftSensor == 1 && rightSensor == 1){// else if white, white
-	      //d = Left;
-	      d = Right;
-	    }
-	    else { // else white, black
-	      // Left the intersection
-	      break;
-	    }
+	    else{
+	      if (leftSensor == 1 && rightSensor == 0){ // if white, black
+		d = Stop; // Out of intersection
+		break;
+	      }
+	      else if (leftSensor == 0 && rightSensor == 1){ // if black, white
+		d = Forward; // Go forward
+	      }
+	      else if (leftSensor == 0 && rightSensor == 0){ // else if black, black
+		d = Right;
+	      }
+	      else if (leftSensor == 1 && rightSensor == 1){// else if white, white
+		d = Left;
+		//d = Right;
+	      }
+	      else { // else white, black
+		// Left the intersection
+		break;
+	      }
 
-	    spinCounter = motors(d, spinCounter);
+	      spinCounter = motors(d, spinCounter);
+	      timeCounter++;
+	    }
 	  }
 	}
 	    
