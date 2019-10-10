@@ -1,0 +1,2 @@
+Cannot predetermine calibration due to the fact that it is so dramatically different on each run of the application.
+
