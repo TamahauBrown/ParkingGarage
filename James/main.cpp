@@ -46,7 +46,8 @@ void flashLights(int counter, int left, int right){
 // Method to control the wheels
 int motors(Direction d, int spinCounter){
   
-  int go = 35;  //forward speed, should be between 30 and 70
+  int go = 50;  //forward speed, should be between 30 and 70
+  int slow = 0;
   
   char lWCom[10];  // left wheel command to send
   char rWCom[10];  // right wheel command to send
@@ -76,6 +77,7 @@ int motors(Direction d, int spinCounter){
   else if(d == Left){
     //lWCom[2] = go;
     //lWCom[1] = 1; // Reverse left wheel
+    lWCom[2] = slow;
     
     rWCom[2] = go;
     
@@ -87,6 +89,7 @@ int motors(Direction d, int spinCounter){
     
     //rWCom[2] = go;
     //rWCom[1] = 1; // Reverse right wheel
+    rWCom[2] = slow;
     
     flashLights(spinCounter, 0, 1); // right light on
     spinCounter++;
@@ -224,7 +227,8 @@ int main() {
 
   // Predetermined routes to car parks
   int pathSize = 4;
-  /*
+  Direction path[pathSize];
+  
   Direction A[pathSize] = {Left, Forward, Stop, Stop};
   Direction B[pathSize] = {Left, Right, Left, Stop};
   Direction C[pathSize] = {Left, Right, Forward, Left};
@@ -233,37 +237,54 @@ int main() {
   Direction F[pathSize] = {Left, Right, Right, Stop};
   Direction G[pathSize] = {Forward, Stop, Stop, Stop};
   Direction H[pathSize] = {Right, Left, Left, Stop};
-  */
-  Direction path[pathSize];
-  char pLet = parkLetter[park];
+  Direction def[pathSize] = {Stop, Stop, Stop, Stop};
+
   
   switch(parkLetter[park]) {
     case 'A' :
-      path = {Left, Forward, Stop, Stop};
+      for (int i = 0; i < pathSize; i++) {
+	path[i] = A[i];
+      }
       break;
     case 'B' :
-      path = {Left, Right, Left, Stop};
+      for (int i = 0; i < pathSize; i++) {
+	path[i] = B[i];
+      }
       break;
     case 'C' :
-      path = {Left, Right, Forward, Left};
+      for (int i = 0; i < pathSize; i++) {
+	path[i] = C[i];
+      }
       break;
     case 'D' :
-      path = {Left, Right, Forward, Left};
+      for (int i = 0; i < pathSize; i++) {
+	path[i] = D[i];
+      }
       break;
     case 'E' :
-      path = {Right, Forward, Stop, Stop};
+      for (int i = 0; i < pathSize; i++) {
+	path[i] = E[i];
+      }
       break;
     case 'F' :
-      path = {Left, Right, Right, Stop};
+      for (int i = 0; i < pathSize; i++) {
+	path[i] = F[i];
+      }
       break;
     case 'G' :
-      path = {Forward, Stop, Stop, Stop};
+      for (int i = 0; i < pathSize; i++) {
+	path[i] = G[i];
+      }
       break;
     case 'H' :
-      path = {Right, Left, Left, Stop};
+      for (int i = 0; i < pathSize; i++) {
+	path[i] = H[i];
+      }
       break;
     default :
-      path = {Stop};
+      for (int i = 0; i < pathSize; i++) {
+	path[i] = def[i];
+      }
   }
 
 
@@ -281,7 +302,7 @@ int main() {
   
   while (true) {
   
-    uBit.display.print('G');   // Display letter saying okay to microbit
+    uBit.display.print('=');   // Display letter saying okay to microbit
 
     leftSensor = uBit.io.P13.getDigitalValue();
 
@@ -332,27 +353,36 @@ int main() {
 
 	// Operate the motor during the intersection
 	if (path[intersection] == Forward){ // Go forward at intersection
-	  while(leftSensor == 0 && rightSensor == 1){ // while black, white
+	  /*while(leftSensor == 0 && rightSensor == 1){ // while black, white
 	    leftSensor = uBit.io.P13.getDigitalValue();
 	    rightSensor = uBit.io.P14.getDigitalValue();
 
 	    spinCounter = motors(Left, spinCounter);
-	  }
+	    }*/
+	  
+	  spinCounter = motors(Forward, spinCounter);
+	  uBit.sleep(100);
+	  
 	
 	  while (true){ // while in intersection
 	    
 	    leftSensor = uBit.io.P13.getDigitalValue();
 
 	    rightSensor = uBit.io.P14.getDigitalValue();
-	  
-	    if (leftSensor == 0 && rightSensor == 1){ // if black, white
+
+	    if (leftSensor == 1 && rightSensor == 0){ // if white, black
+	      d = Stop; // Out of intersection
+	      break;
+	    }
+	    else if (leftSensor == 0 && rightSensor == 1){ // if black, white
 	      d = Forward; // Go forward
 	    }
 	    else if (leftSensor == 0 && rightSensor == 0){ // else if black, black
-	      d = Right; // Turn right
+	      d = Right;
 	    }
-	    else if (leftSensor == 1 && rightSensor == 1){ // else if white, white
-	      d = Left; // Turn left
+	    else if (leftSensor == 1 && rightSensor == 1){// else if white, white
+	      //d = Left;
+	      d = Right;
 	    }
 	    else { // else white, black
 	      // Left the intersection
@@ -391,20 +421,20 @@ int main() {
 	  }
 	    
 	  while(true){
-	    if(leftSensor == 0 && rightSensor == 1){// Until back on track: white, black
+	    if(leftSensor == 1 && rightSensor == 0){// Until back on track: white, black
 	      break;
 	    }
 	    else if(leftSensor == 1 && rightSensor == 1){// If, white, white
 	      // go forward toward other corner of intersection than we entered
-	      d = Forward;
-	    }
-	    else if(rightSensor == 0){ // if right sensor sees black
-	      // swing the left sensor around so turn right
 	      d = Right;
 	    }
-	    else if(leftSensor == 0){ // if left sensor sees black
-	      // swing the right sensor around so turn left
+	    else if(rightSensor == 0){ // if right sensor sees black
+	      // swing the left sensor around so turn
 	      d = Left;
+	    }
+	    else if(leftSensor == 0){ // if left sensor sees black
+	      // swing the right sensor around so turn
+	      d = Right;
 	    }
 	    else{ // else we are lost
 	      d = Stop;
