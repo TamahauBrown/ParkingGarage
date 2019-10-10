@@ -10,11 +10,10 @@ int lastLetter = 7;
 char parkLetter[] ={'A','B','C','D','E','F','G','H'}; 
 bool needPark = true;
 //MicroBitImage i("1,0,0,0,0\n");
-//MicroBitImage clear("0,0,0,0,0\n0,0,0,0,0\n0,0,0,0,0\n0,0,0,0,0\n0,0,0,0,0\n"); 
 
 
 // Enum for the directions the car can move
-enum Direction {Forward, Left, Right, Stop};
+enum Direction {Forward, Left, Right, Stop, sharpLeft};
 
 
 // Method to light the red LED lights on the front
@@ -41,6 +40,25 @@ void flashLights(int counter, int left, int right){
   }
   
   lights(leftLED, rightLED);
+}
+
+void checkSensor(){
+    // Check sonar
+    /*
+    digitalWrite(DigitalPin.P0, 0);
+    uBit.wait_us(2);
+    digitalWrite(DigitalPin.P0, 1);
+    uBit.wait_us(10);
+    digitalWrite(DigitalPin.P0, 0);
+    int pulseIn = pins.pulseIn(DigitalPin.P1, PulseValue.High);
+    distance = Math.idiv(pulseIn, 58);
+    if (distance < 10){ // Park if something blocks it path
+      d = Stop;
+      spinCounter = motors(Stop, spinCounter);
+      uBit.display.print('P');
+      break;
+    }
+    */
 }
 
 // Method to control the wheels
@@ -94,6 +112,15 @@ int motors(Direction d, int spinCounter){
     flashLights(spinCounter, 0, 1); // right light on
     spinCounter++;
   }
+  else if(d == sharpLeft){
+    lWCom[2] = go;
+    lWCom[1] = 1; // Reverse left wheel
+    
+    rWCom[2] = go;
+    
+    flashLights(spinCounter, 1, 0); // Left light on
+    spinCounter++;
+  }
   else { // Stop
     lWCom[2] = 0;
     rWCom[2] = 0;
@@ -124,7 +151,7 @@ void setXonButtonA(MicroBitEvent)
       locX = 1;
     }
   */
-  if(park == lastLetter){
+  if(park >= lastLetter){
     park = 0;
   }
   else{
@@ -148,7 +175,7 @@ void setYonButtonB(MicroBitEvent)
     locY = 0;
   }
   */
-  if(park == 0){
+  if(park <= 0){
     park = lastLetter;
   }
   else{
@@ -168,25 +195,34 @@ void setPark(MicroBitEvent)
   needPark = false;
 }
 
-/*void onData(MicroBitEvent)
+void onData(MicroBitEvent)
 {
   // Get recieved message into PacketBuffer
   uint8_t rxdata[10];
-  int num = uBit.radio.datagram.recv(rxdata, 10);
+  uBit.radio.datagram.recv(rxdata, 6);
+
+  uBit.display.scroll("rec");
 
   // Check checksum
-  if((rxdata[4] == 0x11 && rxdata[5] == 0x11 &&
-      rxdata[6] == 0x11 && rxdata[7] == 0x11)){
+  if((rxdata[0] == 0x11 && rxdata[1] == 0x11 &&
+      rxdata[2] == 0x12 && rxdata[3] == 0x12)){
+
+    park = rxdata[4];
+
+    if (park >= 0 && park <= lastLetter){
+      needPark = false;
+      uBit.display.scroll(parkLetter[park]);
+    }
     
   }
-  }*/
+}
 
 int main() {
 
   // Set the compass calibration
   //---------------------------------------------------
   
-  int xyzScale = 4;    //1024;
+  /*t xyzScale = 4;    //1024;
   int xCentre = 18435; //29744;
   int yCentre = 35367; //4294;
   int zCentre = 64023; //57464;
@@ -206,20 +242,24 @@ int main() {
 
   // Setup some button handlers to allow extra control with buttons.
   uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_LONG_CLICK, manualCalibrate);
+  */
 
   //---------------------------------------------------
 
   // Get designated park
   
   // Get from radio
-  //uBit.messageBus.listen(MICROBIT_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onData);
+  uBit.init();
+  uBit.radio.enable();
+  uBit.radio.setGroup(88);
+  uBit.messageBus.listen(MICROBIT_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onData);
   // Enter manually
   uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK, setXonButtonA);
   uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK, setYonButtonB);
   uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_LONG_CLICK, setPark);
   // Set parking lot
   while (needPark){
-    //uBit.display.print(clear);
+    //uBit.display.print(' ');
     //uBit.display.print(i, locX, locY);
     uBit.display.print(parkLetter[park]);
     uBit.sleep(100);
@@ -299,6 +339,8 @@ int main() {
 
   int leftSensor;
   int rightSensor;
+
+  int distance;
   
   while (true) {
   
@@ -406,7 +448,7 @@ int main() {
 	      break;
 	    }
 	    // otherwise keep turning
-	    spinCounter = motors(Left, spinCounter);
+	    spinCounter = motors(sharpLeft, spinCounter);
 	  }
 	    
 	  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
