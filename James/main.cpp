@@ -2,7 +2,18 @@
 
 MicroBit uBit;
 
-// \Enum for the directions the car can move
+// Variables for manual park entry
+//int locX = 0;
+//int locY = 0;
+int park = 0;
+int lastLetter = 7;
+char parkLetter[] ={'A','B','C','D','E','F','G','H'}; 
+bool needPark = true;
+//MicroBitImage i("1,0,0,0,0\n");
+//MicroBitImage clear("0,0,0,0,0\n0,0,0,0,0\n0,0,0,0,0\n0,0,0,0,0\n0,0,0,0,0\n"); 
+
+
+// Enum for the directions the car can move
 enum Direction {Forward, Left, Right, Stop};
 
 
@@ -98,6 +109,75 @@ void manualCalibrate(MicroBitEvent)
   uBit.compass.calibrate();
 }
 
+// The three following methods are for manual park entry
+void setXonButtonA(MicroBitEvent)
+{
+  /*
+    locX++;
+    if (locY == 0){
+      locX %= 5;
+    }
+    else if (locX > 3){
+      locX = 1;
+    }
+  */
+  if(park == lastLetter){
+    park = 0;
+  }
+  else{
+    park++;
+  }
+}
+
+void setYonButtonB(MicroBitEvent)
+{
+  /*
+  if (locY == 0){
+    locY = 2;
+    if(locX == 0){
+      locX = 1;
+    }
+    else if(locX == 4){
+      locX = 3;
+    }
+  }
+  else{
+    locY = 0;
+  }
+  */
+  if(park == 0){
+    park = lastLetter;
+  }
+  else{
+    park--;
+  }
+}
+
+void setPark(MicroBitEvent)
+{
+  /*if (locY == 2 && (locX == 0 || locX == 4)){// there are no parks here
+    uBit.display.print('?');
+    uBit.sleep(800);
+  }
+  else{
+    needPark = false;
+  }*/
+  needPark = false;
+}
+
+/*void onData(MicroBitEvent)
+{
+  // Get recieved message into PacketBuffer
+  uint8_t rxdata[10];
+  int num = uBit.radio.datagram.recv(rxdata, 10);
+
+  // Check checksum
+  if((rxdata[4] == 0x11 && rxdata[5] == 0x11 &&
+      rxdata[6] == 0x11 && rxdata[7] == 0x11)){
+    
+  }
+  }*/
+
 int main() {
 
   // Set the compass calibration
@@ -122,12 +202,29 @@ int main() {
   uBit.compass.setCalibration(cal);
 
   // Setup some button handlers to allow extra control with buttons.
-  uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK, manualCalibrate);
+  uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_LONG_CLICK, manualCalibrate);
 
   //---------------------------------------------------
 
+  // Get designated park
+  
+  // Get from radio
+  //uBit.messageBus.listen(MICROBIT_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onData);
+  // Enter manually
+  uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_CLICK, setXonButtonA);
+  uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK, setYonButtonB);
+  uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_BUTTON_EVT_LONG_CLICK, setPark);
+  // Set parking lot
+  while (needPark){
+    //uBit.display.print(clear);
+    //uBit.display.print(i, locX, locY);
+    uBit.display.print(parkLetter[park]);
+    uBit.sleep(100);
+  }  
+
   // Predetermined routes to car parks
   int pathSize = 4;
+  /*
   Direction A[pathSize] = {Left, Forward, Stop, Stop};
   Direction B[pathSize] = {Left, Right, Left, Stop};
   Direction C[pathSize] = {Left, Right, Forward, Left};
@@ -136,10 +233,40 @@ int main() {
   Direction F[pathSize] = {Left, Right, Right, Stop};
   Direction G[pathSize] = {Forward, Stop, Stop, Stop};
   Direction H[pathSize] = {Right, Left, Left, Stop};
+  */
   Direction path[pathSize];
-  for(int i = 0; i < pathSize; i++){
-    path[i] = G[i];
+  char pLet = parkLetter[park];
+  
+  switch(parkLetter[park]) {
+    case 'A' :
+      path = {Left, Forward, Stop, Stop};
+      break;
+    case 'B' :
+      path = {Left, Right, Left, Stop};
+      break;
+    case 'C' :
+      path = {Left, Right, Forward, Left};
+      break;
+    case 'D' :
+      path = {Left, Right, Forward, Left};
+      break;
+    case 'E' :
+      path = {Right, Forward, Stop, Stop};
+      break;
+    case 'F' :
+      path = {Left, Right, Right, Stop};
+      break;
+    case 'G' :
+      path = {Forward, Stop, Stop, Stop};
+      break;
+    case 'H' :
+      path = {Right, Left, Left, Stop};
+      break;
+    default :
+      path = {Stop};
   }
+
+
   int intersection = 0;
 
   int leftLED = 0;
