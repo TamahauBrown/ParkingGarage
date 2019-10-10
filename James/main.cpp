@@ -35,7 +35,7 @@ void flashLights(int counter, int left, int right){
 // Method to control the wheels
 int motors(Direction d, int spinCounter){
   
-  int go = 40;  //forward speed, should be between 30 and 70
+  int go = 35;  //forward speed, should be between 30 and 70
   
   char lWCom[10];  // left wheel command to send
   char rWCom[10];  // right wheel command to send
@@ -138,7 +138,7 @@ int main() {
   Direction H[pathSize] = {Right, Left, Left, Stop};
   Direction path[pathSize];
   for(int i = 0; i < pathSize; i++){
-    path[i] = A[i];
+    path[i] = G[i];
   }
   int intersection = 0;
 
@@ -202,16 +202,22 @@ int main() {
 	    uBit.sleep(100);
 	  }
 	}
+
+	// Operate the motor during the intersection
+	if (path[intersection] == Forward){ // Go forward at intersection
+	  while(leftSensor == 0 && rightSensor == 1){ // while black, white
+	    leftSensor = uBit.io.P13.getDigitalValue();
+	    rightSensor = uBit.io.P14.getDigitalValue();
+
+	    spinCounter = motors(Left, spinCounter);
+	  }
 	
-	while (true){ // while in intersection
+	  while (true){ // while in intersection
 	    
-	  leftSensor = uBit.io.P13.getDigitalValue();
+	    leftSensor = uBit.io.P13.getDigitalValue();
 
-	  rightSensor = uBit.io.P14.getDigitalValue();
-
-	  // Operate the motor during the intersection
-	  if (path[intersection] == Forward){ // Go forward at intersection
-	    
+	    rightSensor = uBit.io.P14.getDigitalValue();
+	  
 	    if (leftSensor == 0 && rightSensor == 1){ // if black, white
 	      d = Forward; // Go forward
 	    }
@@ -227,36 +233,68 @@ int main() {
 	    }
 
 	    spinCounter = motors(d, spinCounter);
-	    
-	    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	  }
-	  else if (path[intersection] == Left){ // Go right at intersection
-	    //
+	}
+	    
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	else if (path[intersection] == Left){ // Go right at intersection
+	    
+	  while (true){ // while in intersection
+	    
+	    leftSensor = uBit.io.P13.getDigitalValue();
+	    rightSensor = uBit.io.P14.getDigitalValue();
+	      
 	    if(leftSensor == 1 && rightSensor == 1){// If, white, white
 	      // We are out of the intersection
 	      break;
 	    }
 	    // otherwise keep turning
 	    spinCounter = motors(Left, spinCounter);
-	    
-	    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	  }
-	  else if (path[intersection] == Right){ // Go right at intersection
-	    if(leftSensor == 1 && rightSensor == 0){// If, white, black
-	      // We are out of the intersection
+	    
+	  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	}
+	else if (path[intersection] == Right){ // Go right at intersection
+	    
+	  while(leftSensor == 0 && rightSensor == 1){// while black, white
+	    leftSensor = uBit.io.P13.getDigitalValue();
+	    rightSensor = uBit.io.P14.getDigitalValue();
+	    // move into intersection, aim for white white inside intersection
+	    spinCounter = motors(Right, spinCounter);
+	  }
+	    
+	  while(true){
+	    if(leftSensor == 0 && rightSensor == 1){// Until back on track: white, black
 	      break;
 	    }
-	    
-	    //TODO so just break
-	    break;
-	    
+	    else if(leftSensor == 1 && rightSensor == 1){// If, white, white
+	      // go forward toward other corner of intersection than we entered
+	      d = Forward;
+	    }
+	    else if(rightSensor == 0){ // if right sensor sees black
+	      // swing the left sensor around so turn right
+	      d = Right;
+	    }
+	    else if(leftSensor == 0){ // if left sensor sees black
+	      // swing the right sensor around so turn left
+	      d = Left;
+	    }
+	    else{ // else we are lost
+	      d = Stop;
+	    }
+	    spinCounter = motors(d, spinCounter);
+	      
+	    leftSensor = uBit.io.P13.getDigitalValue();
+	    rightSensor = uBit.io.P14.getDigitalValue();
 	  }
-	  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	  else{ // Else park
-	    spinCounter = motors(Stop, spinCounter);
-	    uBit.display.print('A'); //TODO display parking lot letter
-	    release_fiber();
-	  }
+		 
+	}
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	else{ // Else park
+	  d = Stop;
+	  spinCounter = motors(Stop, spinCounter);
+	  uBit.display.print('P'); //TODO display parking lot letter
+	  break;
 	}
 	d = Stop; // After intersection clear last direction and stop
 	intersection++; // Out of current intersection 
@@ -267,17 +305,17 @@ int main() {
       }
     }
 
-    //------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------
     
-    spinCounter = motors(d, spinCounter);  // Implement set direction
+  spinCounter = motors(d, spinCounter);  // Implement set direction
 
 
-    // Send compass calibration value to PC over serial port
+  // Send compass calibration value to PC over serial port
 
   
     
-    uBit.init();uint8_t buffer[10];  // Bigger than needed
-    /*
+  /*uBit.init();uint8_t buffer[10];  // Bigger than needed
+  
     int h1 = uBit.compass.heading();
     *((int *)buffer) = h1;
     uBit.serial.send(buffer,2);
@@ -288,11 +326,11 @@ int main() {
     int z = uBit.compass.getZ();
     *((int *)(buffer+2)) = z;
     uBit.serial.send(buffer,4);
-    */
+  */
     
-  }
+}
     
-  release_fiber();
+release_fiber();
 }
 
 
