@@ -87,21 +87,6 @@ void flashLights(int counter, int left, int right){
 
 void checkSensor(){
     // Check sonar
-    /*
-    digitalWrite(DigitalPin.P0, 0);
-    uBit.wait_us(2);
-    digitalWrite(DigitaluBit.display.scroll(parkLetter[park]);Pin.P0, 1);
-    uBit.wait_us(10);
-    digitalWrite(DigitalPin.P0, 0);
-    int pulseIn = pins.pulseIn(DigitalPin.P1, PulseValue.High);
-    distance = Math.idiv(pulseIn, 58);
-    if (distance < 10){ // Park if something blocks it path
-      d = Stop;
-      spinCounter = motors(Stop, spinCounter);
-      uBit.display.print('P');
-      break;
-    }
-    */
      //P1 and P2
     //Only you can hear me summoner
     uBit.io.P1.setPull(PullNone);
