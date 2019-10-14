@@ -1,0 +1,28 @@
+Contributors:
+James Sheaf-Morrison 1314151
+Tamahau Brown 	     1314934
+issues we encountered:
+If the tape is too reflective it will read white within the tape and will not follow a consistent course of action.
+Compass had intereference due to the interference from steel beams under the tables while configuring. Also could be due to being near the south magnetic pole.
+
+Results from compass experiment:
+Is it likely to be satisfactory? No, due to the fact it is taking into account interference
+Did we follow the procedure lecture 18 did? Issues around this strategy? 
+Are they the same values on every calibration? No XD.
+Results: Do after presentation
+
+
+Magnetic fields? 
+No due to steel beams underneath table, might work on things such as carpet.
+There were issues around there being magnetic interference, initially we thought it might be due to the south magnetic pole, but when tests were done on the carpet, we noticed there was not as much interference which made us realize that it might be due to the steel underneath the tables causing interference making us unable to be able to use magnetic fields properly with the RC McQueen car.
+
+Speeds and times report: Low battery min speed is 30
+Get times of this. Minimum speed 15. At 15 one of the wheels stopped functioning
+250 = 1/6   m/s			1/4.2  m/s	1/4.9  m/s	
+100 = 1/9.3 m/s			1/6.5  m/s	1/6.1  m/s	
+50  = 1/14  m/s			1/10   m/s	1/10   m/s	
+30  = 1/25  m/s			1/20.5 m/s	1/17.6 m/s	
+15  = 1/272 m/s			1/240  m/s	1/250  m/s	
+10  = unable to move		""	  		
+1   = unable to move		""			
+ 
